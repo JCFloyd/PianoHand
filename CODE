@@ -1,0 +1,306 @@
+#!/usr/lib/python
+
+import serial
+import time
+import math
+
+from servoLib import * 
+
+    
+#global CONSTANTS
+SPEED = int(120)
+TAP_SPEED = 0.4
+HOLD_SPEED = TAP_SPEED * 2
+RESET_SPEED = TAP_SPEED * 0.3
+
+# Arm Shifting Code:
+MIN = 60
+MAX = 109
+MID = (MAX+MIN)/2
+MAX_SHIFT_TIME=5 #time it takes to move from MIN to MAX
+MAX_SHIFT=MAX-MIN
+DELAY = 1.4 #amount between 0 and 2 to determine whether we want to delay more or less
+
+SCALE=100
+
+# "global" variables
+LAST = ((109+60)/2) #variable for saving the last arm location in memory
+
+ser = serial.Serial("/dev/ttyACM0", 9600)
+
+
+def pinky():
+    servo = int(0)
+    angle = int(100)
+    setSpeed(ser, servo, SPEED)
+    setAngle(ser, servo, angle)
+def ring():
+    servo = int(1)
+    angle = int(100)
+    setSpeed(ser, servo, SPEED)
+    setAngle(ser, servo, angle)
+def middle():
+    servo = int(2)
+    angle = int(100)
+    setSpeed(ser, servo, SPEED)
+    setAngle(ser, servo, angle)
+def pointer():
+    servo = int(4)
+    angle = int(50)
+    setSpeed(ser, servo, SPEED)
+    setAngle(ser, servo, angle)
+    
+def resetFingers():
+    #pinkyReset
+    servo = int(0)
+    angle = int(30)
+    setSpeed(ser, servo, SPEED)
+    setAngle(ser, servo, angle)
+
+    #ringReset
+    servo = int(1)
+    angle = int(60)
+    setSpeed(ser, servo, SPEED)
+    setAngle(ser, servo, angle)
+
+    #middleReset
+    servo = int(2)
+    angle = int(60)
+    setSpeed(ser, servo, SPEED)
+    setAngle(ser, servo, angle)
+
+    #pointerReset
+    servo = int(4)
+    angle = int(120) #supposed to be backward
+    setSpeed(ser, servo, SPEED)
+    setAngle(ser, servo, angle)
+
+def pinkyReset():
+    servo = int(0)
+    angle = int(30)
+    setSpeed(ser, servo, SPEED)
+    setAngle(ser, servo, angle)
+
+def ringReset():
+    servo = int(1)
+    angle = int(60)
+    setSpeed(ser, servo, SPEED)
+    setAngle(ser, servo, angle)
+
+def middleReset():
+    servo = int(2)
+    angle = int(60)
+    setSpeed(ser, servo, SPEED)
+    setAngle(ser, servo, angle)
+
+def pointerReset():
+    servo = int(4)
+    angle = int(120) #supposed to be backward
+    setSpeed(ser, servo, SPEED)
+    setAngle(ser, servo, angle)
+    
+def pointerTap():
+    pointer()
+    time.sleep(TAP_SPEED)
+    pointerReset()
+    time.sleep(RESET_SPEED)
+
+def middleTap():
+    middle()
+    time.sleep(TAP_SPEED)
+    middleReset()
+    time.sleep(RESET_SPEED)
+
+def ringTap():
+    ring()
+    time.sleep(TAP_SPEED)
+    ringReset()
+    time.sleep(RESET_SPEED)
+
+def pinkyTap():
+    pinky()
+    time.sleep(TAP_SPEED)
+    pinkyReset()
+    time.sleep(RESET_SPEED)
+
+def pointerHold():
+    pointer()
+    time.sleep(HOLD_SPEED)
+    pointerReset()
+    time.sleep(RESET_SPEED)
+
+def middleHold():
+    middle()
+    time.sleep(HOLD_SPEED)
+    middleReset()
+    time.sleep(RESET_SPEED)
+
+def ringHold():
+    ring()
+    time.sleep(HOLD_SPEED)
+    ringReset()
+    time.sleep(RESET_SPEED)
+
+def pinkyHold():
+    pinky()
+    time.sleep(HOLD_SPEED)
+    pinkyReset()
+    time.sleep(RESET_SPEED)
+    
+# Use this after shifting the arm to wait before playing    
+def shiftDelay(LAST,loc): #loc means desired location
+   # print abs((DELAY*LAST - loc)/(MAX_SHIFT/MAX_SHIFT_TIME))
+
+    time.sleep(abs((DELAY*LAST - loc)/(MAX_SHIFT/MAX_SHIFT_TIME)))
+    LAST = loc #set the last arm location for future use
+
+  #  print LAST
+def scale(loc): 
+    loc = ((MAX - MIN)*x/SCALE)+MIN #convert input to correct range
+    
+def shift(LAST,loc): #loc means desired location, min=60, max=109
+
+    
+    if loc < MIN: #keep motor from trying to go out of bounds
+        loc = MIN
+    if loc > MAX: #keep motor from trying to go out of bounds
+        loc = MAX
+    servo = int(5)
+    angle = int(loc)
+    setSpeed(ser, servo, SPEED)
+    setAngle(ser, servo, angle)
+    shiftDelay(LAST,loc)
+
+
+# This is the song for Mary had a little Lamb    
+def marylamb():
+    ringTap()
+    middleTap()
+    pointerTap()
+    middleTap()
+    
+    ringTap()
+    ringTap()
+    ringHold()
+    
+    middleTap()
+    middleTap()
+    middleHold()
+
+    ringTap()
+    ringTap()
+    ringHold()    
+
+    ringTap()
+    middleTap()
+    pointerTap()
+    middleTap()
+    
+    ringTap()
+    ringTap()
+    ringTap()
+
+    ringTap()
+    middleTap()
+    middleTap()
+    ringTap()
+    middleTap()
+    pointerHold()
+
+# This song is for Heart n Soul
+def heartnsoul(LAST):
+
+    # this is the start position and first set
+    ringTap()
+    ringTap()
+    ringHold()
+    
+    ringTap()
+    middleTap()
+    pointerTap()
+    middleTap()
+    ringTap()
+    pinkyTap()
+    #shift(LAST,MID)
+    #ringTap()      
+    
+    # move the arm here to do the second set
+
+
+
+    shift(LAST,MID)
+    
+    ringTap()
+    ringTap()
+    ringHold()
+    
+    ringTap()
+    middleTap()
+    pointerTap()
+    middleTap()
+    ringTap()
+    pinkyTap()
+    
+    # move pinky then play the rest
+    shift(LAST,MID+10)
+    #middleTap()
+    #ringHold()
+    pinkyTap()
+
+    # move index
+    shift(LAST,MID)
+    pointerHold()
+    
+    # move pinky and scale
+    shift(LAST,MID+10)
+    pinkyTap()
+    ringTap()
+    middleTap()
+    pointerTap()
+    # shift(LAST,MID)
+    # move hand to start position
+    shift(LAST,MID-20)
+
+# This is a Test    
+def test(LAST):
+    pointerTap()
+    middleTap()
+    ringTap()
+#    pinkyTap()
+    
+    # move hand
+    shift(LAST,MID)
+    
+#    pinkyTap()
+    ringTap()
+    middleTap()
+    pointerTap()
+    
+    # Move hand to start position
+    shift(LAST,MID-20)
+
+       
+### write code below this line that you want to ALWAYS do: ###
+
+shift(LAST,MID-20)
+#time.sleep(MAX_SHIFT_TIME/2) #don't play until it is centered
+
+
+play = True
+while play:
+    song = raw_input("What song would you like to play? 'marylamb' or 'heartnsoul': ")
+    print "playing %r " % (song)
+
+    if song == "marylamb":
+        marylamb()
+    elif song == "heartnsoul":
+        heartnsoul(LAST)
+    elif song == "test":
+        test(LAST)
+    elif song == "exit":
+        play = False
+    else:
+        print "try agian"
+
+        
+shift(LAST,MID-20)
